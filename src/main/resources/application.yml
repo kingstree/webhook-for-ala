@@ -1,0 +1,101 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: account-change-webhook
+
+  # ======================================================
+  # SQLite Datasource
+  # ======================================================
+  datasource:
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:./data/webhook.db
+    username: ""
+    password: ""
+
+    # SQLite ??? ??? ?? ???
+    hikari:
+      maximum-pool-size: 1
+      minimum-idle: 1
+      connection-timeout: 30000
+      connection-init-sql: "PRAGMA foreign_keys = ON"
+  # ======================================================
+  # Flyway
+  # ======================================================
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+
+  # ======================================================
+  # Async Executor (??: ??? ?? ?)
+  # ======================================================
+  task:
+    execution:
+      pool:
+        core-size: 1
+        max-size: 1
+        queue-capacity: 1000
+      thread-name-prefix: inbox-worker-
+
+# ======================================================
+# Webhook Security
+# ======================================================
+webhook:
+  security:
+    # ???? ?? ??? ?? ??(?)
+    allowed-skew-seconds: 300
+
+    # ?? ??? ?? (hex | base64 ? ??? ??)
+    signature-encoding: hex
+
+    # canonical string ??
+    # {sourceSystem}.{eventId}.{timestamp}.{rawBody}
+    canonical-format: SOURCE_EVENT_TS_BODY
+
+  # ???? secret ??
+  secrets:
+    apple: ${WEBHOOK_SECRET_APPLE:change-me-apple}
+    partner: ${WEBHOOK_SECRET_PARTNER:change-me-partner}
+    internal: ${WEBHOOK_SECRET_INTERNAL:change-me-internal}
+
+# ======================================================
+# Logging
+# ======================================================
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.springframework.jdbc.core: INFO
+    # ? ???? ?????? ??
+    com.yourcompany.webhook: DEBUG
+
+# ======================================================
+# Swagger (?? / ???)
+# ======================================================
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+# ======================================================
+# Actuator (??)
+# ======================================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+# ======================================================
+# Mybatis
+# ======================================================
+mybatis:
+  mapper-locations: classpath:mybatis/mapper/**/*.xml
+  type-aliases-package: aladin.webhook.infra.mybatis.model
+  configuration:
+    map-underscore-to-camel-case: true

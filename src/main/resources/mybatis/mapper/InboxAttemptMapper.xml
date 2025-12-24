@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="aladin.webhook.infra.mybatis.mapper.InboxAttemptMapper">
+
+    <!-- 다음 attempt_no 계산: COALESCE(MAX,0)+1 -->
+    <select id="selectNextAttemptNo" resultType="int">
+        SELECT COALESCE(MAX(attempt_no), 0) + 1
+        FROM inbox_event_attempts
+        WHERE event_id = #{eventId}
+    </select>
+
+    <!-- attempt STARTED 생성 -->
+    <insert id="insertStarted">
+        INSERT INTO inbox_event_attempts (
+            event_id, attempt_no, attempt_status, started_at
+        ) VALUES (
+                     #{eventId}, #{attemptNo}, 'STARTED', CURRENT_TIMESTAMP
+                 )
+    </insert>
+
+    <!-- attempt 성공 -->
+    <update id="updateSucceeded">
+        UPDATE inbox_event_attempts
+        SET attempt_status = 'SUCCEEDED',
+            ended_at = CURRENT_TIMESTAMP,
+            error_message = NULL
+        WHERE event_id = #{eventId}
+          AND attempt_no = #{attemptNo}
+    </update>
+
+    <!-- attempt 실패 -->
+    <update id="updateFailed">
+        UPDATE inbox_event_attempts
+        SET attempt_status = 'FAILED',
+            ended_at = CURRENT_TIMESTAMP,
+            error_message = #{errorMessage}
+        WHERE event_id = #{eventId}
+          AND attempt_no = #{attemptNo}
+    </update>
+
+    <!-- eventId 기준 attempt 목록 조회 -->
+    <select id="selectByEventId"
+            resultType="aladin.webhook.infra.mybatis.model.InboxAttemptRow">
+        SELECT
+            attempt_id,
+            event_id,
+            attempt_no,
+            attempt_status,
+            started_at,
+            ended_at,
+            error_message
+        FROM inbox_event_attempts
+        WHERE event_id = #{eventId}
+        ORDER BY attempt_no ASC
+    </select>
+
+</mapper>
