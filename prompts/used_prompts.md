@@ -1,26 +1,111 @@
-# Getting Started
 
-### Reference Documentation
+[알라딘 Webhook 프로젝트 – 사용자 질의 전체 요약]
 
-For further reference, please consider the following sections:
+※ 본 문서는 해당 세션에서 사용자가 AI에게 질의한 모든 질문을
+'의도 중심'으로 정리한 로그입니다.
+※ 소스 코드 원문, 에러 스택 원문, 파일 전체 내용은 포함하지 않고
+'무엇을 요청했는지'만 요약했습니다.
 
-* [Official Gradle documentation](https://docs.gradle.org)
-* [Spring Boot Gradle Plugin Reference Guide](https://docs.spring.io/spring-boot/4.0.1/gradle-plugin)
-* [Create an OCI image](https://docs.spring.io/spring-boot/4.0.1/gradle-plugin/packaging-oci-image.html)
-* [Spring Boot DevTools](https://docs.spring.io/spring-boot/4.0.1/reference/using/devtools.html)
-* [Spring Web](https://docs.spring.io/spring-boot/4.0.1/reference/web/servlet.html)
+--------------------------------------------------
+1. 프로젝트 방향 및 테스트 전략 관련 질의
+--------------------------------------------------
+- Webhook 기반 시스템에서 필수로 검증해야 할 테스트 시나리오 정리 요청
+- 단위 테스트(Unit)와 슬라이스 테스트(Slice)의 역할 분리 질문
+- 어떤 테스트를 필수로 제출해야 과제 요건을 충족하는지 확인
+- 테스트 패키지 구조 설계 요청
+- ParameterizedTest를 활용한 테스트 커버리지 확장 요청
 
-### Guides
+--------------------------------------------------
+2. Webhook 수신 / 서명 검증 관련 질의
+--------------------------------------------------
+- HMAC 기반 Webhook 서명 검증 로직 검증 요청
+- source(INTERNAL / PARTNER / APPLE)별 시크릿 관리 방식 질문
+- 서명 검증 실패 시 에러 응답 포맷에 대한 질문
+- timestamp replay attack 방어 로직 테스트 필요 여부 질문
+- WebhookSignatureVerifier 단위 테스트 보완 요청
 
-The following guides illustrate how to use some features concretely:
+--------------------------------------------------
+3. Webhook 수신 → Inbox 적재 로직 질의
+--------------------------------------------------
+- 동일 eventId 재전송 시 중복 처리(idempotency) 설계 질문
+- DB unique 제약과 서비스 로직 중 어디서 중복을 제어해야 하는지 질문
+- RECEIVED / PROCESSING / DONE / FAILED 상태 전이 검증 요청
+- DUPLICATE_* idempotency 매핑 기준 검증 요청
+- UNKNOWN 상태 처리 기준 질의
 
-* [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)
-* [Serving Web Content with Spring MVC](https://spring.io/guides/gs/serving-web-content/)
-* [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
+--------------------------------------------------
+4. InboxProcessorService 이벤트 처리 관련 질의
+--------------------------------------------------
+- InboxProcessorService 성공/실패 시나리오 테스트 추가 요청
+- JSON 파싱 실패 시 처리 전략 질문
+- 지원하지 않는 eventType 처리 방식 질문
+- USER_NOT_FOUND 케이스 처리 기준 질문
+- EMAIL_FORWARDING_CHANGED 처리 후 계정 조회 값 검증 요청
+- ACCOUNT_DELETED 처리 후 상태 변경 검증 요청
+- APPLE source의 경우 별도 상태값(APPLE_ACCOUNT_DELETED) 처리 여부 질문
 
-### Additional Links
+--------------------------------------------------
+5. Account / Inbox 조회 API 관련 질의
+--------------------------------------------------
+- 계정 상태 조회 API 테스트 범위 질문
+- 이벤트 처리 결과 조회 API 테스트 기준 질문
+- InboxQueryService에서 event + attempts 조립 로직 검증 요청
+- 조회 결과 매핑 시 타입 변환 이슈(NumberFormatException) 원인 질문
 
-These additional references should also help you:
+--------------------------------------------------
+6. Filter / Request 처리 관련 질의
+--------------------------------------------------
+- CachedBodyFilter 역할 설명 요청
+- request body를 여러 번 읽기 위한 구조 검증 요청
+- CachedBodyFilter 단위 테스트 작성 요청
+- 빈 body / null body 처리 안전성 검증 요청
 
-* [Gradle Build Scans – insights for your project's build](https://scans.gradle.com#gradle)
+--------------------------------------------------
+7. DTO / Validation 관련 질의
+--------------------------------------------------
+- WebhookRequestDto Bean Validation 동작 여부 질문
+- @Schema 와 @NotBlank/@NotNull 관계 질문
+- Validation 테스트 실패 원인 분석 요청
 
+--------------------------------------------------
+8. 테스트 실행 및 Gradle 관련 질의
+--------------------------------------------------
+- 특정 테스트 클래스만 실행하는 Gradle 옵션 질문
+- 테스트 패키지 대소문자 문제로 테스트 미인식 원인 질문
+- No matching tests found 오류 원인 분석 요청
+- contextLoads 테스트 실패 원인 질문
+
+--------------------------------------------------
+9. Flyway / SQLite 초기화 관련 질의
+--------------------------------------------------
+- SQLite 파일 경로 문제로 인한 테스트 실패 원인 질문
+- Flyway가 테스트 실행 시 자동 실행되는 구조 질문
+- 테스트 환경에서 DB 초기화 전략 질문
+- 과제 제출용 SQLite 초기화 코드 위치 확인 요청
+
+--------------------------------------------------
+10. README / 제출 문서 관련 질의
+--------------------------------------------------
+- 제출용 README 구성 항목 정리 요청
+- 실행 방법 / API 요약 / 테스트 내역 정리 요청
+- Flyway / SQLite 초기화 설명 보강 요청
+- README를 실제 md 파일로 생성 요청
+
+--------------------------------------------------
+11. 대화 로그 / AI 활용 내역 정리 요청
+--------------------------------------------------
+- 프로젝트 진행 중 AI와 나눈 질의 전체 정리 요청
+- 소스/에러 원문 제외 조건 하 요약 요청
+- 다운로드 가능한 text 파일 생성 요청
+- 과제 제출 시 AI 활용 범위 설명용 문서 요청
+
+--------------------------------------------------
+[요약]
+본 세션은 Webhook 기반 백엔드 시스템을 설계·구현·테스트·문서화하는
+전 과정을 다루었으며,
+사용자는 단순 구현이 아니라
+- 테스트 커버리지
+- 상태 전이의 명확성
+- 에러 처리 일관성
+- 제출 기준 충족
+  을 지속적으로 검증하는 방향으로 질의를 진행함.
